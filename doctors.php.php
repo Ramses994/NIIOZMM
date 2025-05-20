@@ -1,0 +1,67 @@
+<?php
+// doctors.php
+
+// Заголовок для JSON
+header('Content-Type: application/json');
+
+// Данные о врачах
+$doctors = [
+    [
+        "id" => 1,
+        "name" => "Иванова А.П.",
+        "specialization" => "Терапевт",
+        "schedule" => [
+            "Пн" => "09:00-12:00",
+            "Ср" => "09:00-12:00",
+            "Пт" => "10:00-13:00"
+        ],
+        "room" => "101"
+    ],
+    [
+        "id" => 2,
+        "name" => "Петров В.С.",
+        "specialization" => "Хирург",
+        "schedule" => [
+            "Вт" => "13:00-17:00",
+            "Чт" => "14:00-18:00"
+        ],
+        "room" => "205"
+    ],
+    [
+        "id" => 3,
+        "name" => "Сидорова Е.К.",
+        "specialization" => "Офтальмолог",
+        "schedule" => [
+            "Пн" => "10:00-15:00",
+            "Ср" => "10:00-15:00",
+            "Пт" => "09:00-14:00"
+        ],
+        "room" => "312"
+    ],
+    [
+        "id" => 4,
+        "name" => "Козлов Д.М.",
+        "specialization" => "Невролог",
+        "schedule" => [
+            "Вт" => "08:30-14:00",
+            "Чт" => "08:30-14:00",
+            "Сб" => "10:00-13:00"
+        ],
+        "room" => "420"
+    ]
+];
+
+// Получаем специализацию из параметра
+$specialization = $_GET['specialization'] ?? 'all';
+
+// Фильтруем врачей
+if ($specialization !== 'all') {
+    $filteredDoctors = array_filter($doctors, function($doctor) use ($specialization) {
+        return $doctor['specialization'] === $specialization;
+    });
+    $doctors = array_values($filteredDoctors); // Сбрасываем ключи
+}
+
+// Возвращаем данные в формате JSON
+echo json_encode(['doctors' => $doctors]);
+?>
