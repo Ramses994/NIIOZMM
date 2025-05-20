@@ -1,0 +1,139 @@
+<?php
+// Встроенные JSON данные с расписанием врачей
+$jsonData = '
+[
+  {
+    "doctor": "Иванов Иван Иванович",
+    "specialization": "терапевт",
+    "schedule": {
+      "Понедельник": "09:00 - 12:00",
+      "Вторник": "10:00 - 13:00",
+      "Среда": "09:00 - 12:00",
+      "Четверг": "10:00 - 13:00",
+      "Пятница": "09:00 - 12:00"
+    }
+  },
+  {
+    "doctor": "Петров Петр Петрович",
+    "specialization": "кардиолог",
+    "schedule": {
+      "Понедельник": "14:00 - 17:00",
+      "Вторник": "15:00 - 18:00",
+      "Среда": "14:00 - 17:00",
+      "Четверг": "15:00 - 18:00",
+      "Пятница": "14:00 - 17:00"
+    }
+  },
+  {
+    "doctor": "Смирнова Мария Ивановна",
+    "specialization": "терапевт",
+    "schedule": {
+      "Понедельник": "08:30 - 11:30",
+      "Вторник": "09.30 -12.30",
+      "Среда": "08.30 -11.30",
+      "Четверг": "09.30-12.30",
+      "Пятница":"08.30-11.30"
+    }
+  }
+]
+';
+
+// Распарсим JSON
+$data = json_decode($jsonData, true);
+
+// Получаем выбранную специализацию из GET-параметра
+$filterSpec = isset($_GET['specialization']) ? $_GET['specialization'] : '';
+?>
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Расписание врачей</title>
+<!-- Bootstrap CSS -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+<style>
+/* Для горизонтального скролла таблицы на малых экранах */
+.table-responsive {
+    overflow-x: auto;
+}
+</style>
+</head>
+<body class="p-3">
+
+<h2>Расписание врачей</h2>
+
+<!-- Фильтр по специализации -->
+<form method="GET" class="mb-3">
+    <label for="specialization" class="form-label">Выберите специализацию:</label>
+    <select id="specialization" name="specialization" class="form-select" onchange="this.form.submit()">
+        <option value="" <?php if(empty($filterSpec)) echo 'selected'; ?>>Все</option>
+        <option value="терапевт" <?php if($filterSpec=='терапевт') echo 'selected'; ?>>Терапевт</option>
+        <option value="кардиолог" <?php if($filterSpec=='кардиолог') echo 'selected'; ?>>Кардиолог</option>
+        <!-- добавьте другие специализации при необходимости -->
+    </select>
+</form>
+
+<!-- Таблица с расписанием -->
+<div class="table-responsive">
+<table class="table table-bordered align-middle" id="scheduleTable">
+<thead class="table-light">
+<tr>
+<th>Доктор</th>
+<th>Специализация</th>
+<th>График работы</th>
+</tr>
+</thead>
+<tbody>
+<?php
+// Выводим строки таблицы, фильтруя по специализации
+foreach ($data as $entry) {
+    if ($filterSpec && $entry['specialization'] !== $filterSpec) {
+        continue; // пропускаем, если не совпадает фильтр
+    }
+    
+    // Формируем график работы в виде строки с переносами
+    $scheduleStr = '';
+    foreach ($entry['schedule'] as $day => $time) {
+        $scheduleStr .= "<strong>$day:</strong> $time<br/>";
+    }
+    
+    echo "<tr>";
+    echo "<td>" . htmlspecialchars($entry['doctor']) . "</td>";
+    echo "<td>" . htmlspecialchars($entry['specialization']) . "</td>";
+    echo "<td>$scheduleStr</td>";
+    echo "</tr>";
+}
+?>
+</tbody>
+</table>
+</div>
+
+<!-- Поиск по имени врача -->
+<div class="mb-3 mt-4">
+<label for="searchDoctor" class="form-label">Поиск по имени врача:</label>
+<input type="text" id="searchDoctor" class="form-control" placeholder="Введите имя врача..."/>
+</div>
+
+<!-- Скрипт для фильтрации по имени врача -->
+<script>
+document.getElementById('searchDoctor').addEventListener('keyup', function() {
+    const filterValue = this.value.toLowerCase();
+    const rows = document.querySelectorAll('#scheduleTable tbody tr');
+    
+    rows.forEach(row => {
+        const doctorName = row.cells[0].textContent.toLowerCase();
+        if (doctorName.includes(filterValue)) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    });
+});
+</script>
+
+<!-- Bootstrap JS (опционально) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>
